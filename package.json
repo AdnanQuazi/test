@@ -23,9 +23,6 @@
     "natural": "^8.0.1",
     "openai": "^4.90.0",
     "p-limit": "^6.2.0",
-    "pdf-extract": "^1.0.11",
-    "pdf-parse": "^1.1.1",
-    "pdfjs-dist": "^5.1.91",
-    "pdfreader": "^3.0.7"
+    "pdf-parse": "^1.1.1"
   }
 }

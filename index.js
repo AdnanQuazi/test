@@ -10,7 +10,7 @@ const oauthRouter = require("./src/routes/oauth");
 // Local utilities and pipelines
 const extractAndParseJson = require("./src/utils/json-parser");
 const parseQuery = require("./src/pipelines/search-pipeline");
-const planBasedPrompt = require("./prompts/plan-based-prompt");
+const responseGenerationPrompt = require("./prompts/response-generation-prompt");
 const shouldTriggerSync = require("./src/utils/sync-rate-limit");
 const syncSlackMessages = require("./src/pipelines/sync-slack-messages-pipeline");
 
@@ -27,7 +27,9 @@ const isUserAdmin = require("./src/helpers/slack-helpers");
 
 // Google Generative AI client
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const appendQueryContext = require("./src/helpers/query-context");
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
 // Express middleware
 expressApp.use(express.urlencoded({ extended: true }));
@@ -38,8 +40,7 @@ expressApp.set("views", path.resolve(__dirname, "views"));
 // Utility to build prompt and get AI response
 async function askGemini(query, context, subdomain, channelId) {
   try {
-    const prompt = planBasedPrompt(query, context, subdomain, channelId);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const prompt = responseGenerationPrompt(query, context, subdomain, channelId);
     const result = await model.generateContent(prompt);
     return result.response.text();
   } catch (err) {
@@ -53,14 +54,7 @@ async function askGemini(query, context, subdomain, channelId) {
 expressApp.use("/slack", oauthRouter);
 
 // Helper to append context to blocks
-function appendQueryContext(blocks, query, note) {
-  const updated = [...blocks, { type: "divider" }];
-  updated.push({ type: "context", elements: [{ type: "mrkdwn", text: `*User Asked:* ${query}` }] });
-  if (note) {
-    updated.push({ type: "context", elements: [{ type: "mrkdwn", text: `*Note:* ${note}` }] });
-  }
-  return updated;
-}
+
 
 // Slack event: Bot joined a channel
 app.event("member_joined_channel", async ({ event, context, logger }) => {
@@ -71,7 +65,7 @@ app.event("member_joined_channel", async ({ event, context, logger }) => {
 
   try {
     await client.chat.postMessage({ channel: event.channel, ...WELCOME_MESSAGE });
-    await syncSlackMessages(client, event.channel, context.botToken);
+    // await syncSlackMessages(client, event.channel, context.botToken);
   } catch (err) {
     logger.error(`Sync error: ${err}`);
   }

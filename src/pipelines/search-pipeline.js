@@ -4,7 +4,7 @@ const {
   summarize_conversation,
   hybrid_search,
 } = require("./search-pipeline-functions");
-const sendToGemini = require("../services/gemini-planner");
+const intentRecognition = require("../services/intent-recognition");
 const getEmbedding = require("../services/embedding-service");
 
 const PLANS = {
@@ -36,7 +36,7 @@ function convertAndSwapTimestamps(args) {
 }
 
 async function parseQuery({ query, channelId }) {
-  const parsedQuery = await extractAndParseJson(await sendToGemini(query));
+  const parsedQuery = await extractAndParseJson(await intentRecognition(query));
 
   if (parsedQuery.arguments && parsedQuery.arguments.startTs) {
     // Convert and swap the timestamps.
