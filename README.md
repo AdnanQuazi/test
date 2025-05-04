@@ -12,7 +12,7 @@
     <img src="https://zwddqklqugyvwnnfpqpk.supabase.co/storage/v1/object/public/assets/slack/zap-logo.jpg" alt="Logo" width="80" height="80">
   </a>
 
-  <h3 align="center">Zap</h3>
+  <h3 align="center">Zap - minor test</h3>
 
   <p align="center">
     Your Knowledge, Your Control, Our Intelligence 
